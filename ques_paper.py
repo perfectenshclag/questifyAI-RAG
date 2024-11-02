@@ -2,7 +2,6 @@
 import streamlit as st
 import os
 from langchain_groq import ChatGroq
-from langchain_openai import OpenAIEmbeddings
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -27,7 +26,6 @@ import time
 load_dotenv()
 
 # Load environment variables for API keys
-os.environ['OPENAI_API_KEY'] = os.getenv("OPENAI_API_KEY")
 os.environ['GROQ_API_KEY'] = os.getenv("GROQ_API_KEY")
 os.environ['HF_TOKEN'] = os.getenv("HF_TOKEN")
 
