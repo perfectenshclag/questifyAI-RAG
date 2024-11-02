@@ -5,7 +5,7 @@ langchain_core
 langchain_huggingface
 langchain
 huggingface-hub
-FAISS
+faiss-cpu
 python-dotenv
 reportlab
 pymupdf
