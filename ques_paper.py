@@ -16,6 +16,8 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from dotenv import load_dotenv
 from pdf2image import convert_from_bytes
 import pytesseract
@@ -86,7 +88,49 @@ def create_vector_embedding(uploaded_files):
         
         # Create vector store
         st.session_state.vectors = FAISS.from_documents(st.session_state.final_documents, st.session_state.embeddings)
+def create_pdf(answer_content):
+    """Generate a styled PDF document using reportlab."""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    
+    # Define styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'TitleStyle', parent=styles['Title'], fontSize=22, spaceAfter=12, textColor=colors.HexColor("#003366"), alignment=1)
+    question_style = ParagraphStyle(
+        'QuestionStyle', parent=styles['Heading2'], fontSize=16, spaceAfter=10, textColor=colors.green,)
+    answer_style = ParagraphStyle(
+        'AnswerStyle', parent=styles['BodyText'], fontSize=14, spaceAfter=8, leftIndent=10, rightIndent=10,)
+    summary_style = ParagraphStyle(
+        'SummaryStyle', parent=styles['BodyText'], fontSize=14, spaceAfter=15, fontName="Helvetica-Bold", textColor=colors.blue)
 
+    # Create elements list for PDF
+    elements = []
+
+    # Add Title
+    title = "📄 Generated Answer"
+    elements.append(Paragraph(title, title_style))
+    elements.append(Spacer(1, 0.2 * inch))
+
+    # Add Question
+    question_text = f"<b>Question:</b> {user_prompt}"
+    elements.append(Paragraph(question_text, question_style))
+    elements.append(Spacer(1, 0.1 * inch))
+
+    # Add Answer Content
+    answer_lines = answer_content.split("\n\n")
+    for line in answer_lines:
+        elements.append(Paragraph(line, answer_style))
+        elements.append(Spacer(1, 0.1 * inch))
+    
+    # Add Summary
+    summary_text = "📌 Summary:\n"
+    elements.append(Paragraph(summary_text, summary_style))
+
+    # Build PDF
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
 st.title("Question Paper Predictor")
 
 # Upload multiple PDF files
