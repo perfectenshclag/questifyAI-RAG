@@ -13,6 +13,12 @@ A Streamlit-based application that predicts potential question papers by analyzi
 
 ---
 
+## Hosted Link
+
+Try out the app live here: [Question Paper Predictor on Streamlit](https://question-paper.streamlit.app)
+
+---
+
 ## Tech Stack
 
 - **Python Libraries**: Streamlit, LangChain, FAISS, HuggingFace Embeddings, ReportLab, pdf2image, pytesseract.
