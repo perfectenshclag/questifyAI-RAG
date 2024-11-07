@@ -1,95 +1,92 @@
-# Question Paper Predictor
 
-A Streamlit-based application that predicts potential question papers by analyzing patterns in previous papers. This app utilizes advanced NLP techniques with LangChain, FAISS embeddings, and a language model to generate likely future questions based on historical data.
+# 🎓 Question Paper Predictor
 
----
-
-## Features
-
-1. **PDF Upload and OCR**: Supports uploading multiple PDFs with OCR to extract text from image-based PDFs.
-2. **Vector Embedding and Retrieval**: Creates embeddings for uploaded documents and enables retrieval based on user prompts.
-3. **Question Paper Prediction**: Generates question papers based on recurring themes and question formats.
-4. **PDF Export**: Allows users to download the generated question paper as a styled PDF document.
+**A Streamlit-based application that predicts potential question papers by analyzing patterns in previous papers.** This app leverages advanced NLP techniques with **LangChain, FAISS embeddings, and a powerful language model** to forecast likely future questions based on historical data—ideal for educators and students preparing for exams! 🚀
 
 ---
 
-## Hosted Link
+## ✨ Features
 
-Try out the app live here: [Question Paper Predictor on Streamlit](https://question-paper.streamlit.app)
+- 📄 **PDF Upload and OCR**: Upload multiple PDFs for analysis. Our app extracts text even from image-based PDFs using OCR, making sure no data is left behind.
+- 🔍 **Vector Embedding and Retrieval**: Generate embeddings for uploaded documents to retrieve information based on user queries.
+- 📜 **Question Paper Prediction**: Anticipates questions by analyzing patterns in question formats and themes from past papers.
+- 📥 **PDF Export**: Download the predicted question paper as a beautifully styled PDF for easy sharing and review.
 
----
-
-## Tech Stack
-
-- **Python Libraries**: Streamlit, LangChain, FAISS, HuggingFace Embeddings, ReportLab, pdf2image, pytesseract.
-- **OCR**: `pdf2image` and `pytesseract` for PDF-to-text conversion.
-- **Vector Store**: FAISS for document embedding and retrieval.
-- **NLP Model**: ChatGroq with HuggingFace embeddings.
-- **PDF Generation**: ReportLab for generating downloadable PDFs.
+Try it live here! 👉 [**Questifyai on Streamlit**](https://questifyai.streamlit.app)
 
 ---
 
-## Installation
+## 🛠 Tech Stack
 
-1. **Clone the repository**:
-
-    ```bash
-    git clone https://github.com/yourusername/Question-Paper-Predictor.git
-    cd Question-Paper-Predictor
-    ```
-
-2. **Install required dependencies**:
-
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-3. **Set up environment variables**: Add your environment variables in a `.env` file:
-
-    ```plaintext
-    GROQ_API_KEY=your_groq_api_key
-    HF_TOKEN=your_huggingface_token
-    ```
-
-4. **Install Tesseract** (if not installed):
-
-    - **Ubuntu**:
-      ```bash
-      sudo apt-get install tesseract-ocr
-      ```
-    - **macOS**:
-      ```bash
-      brew install tesseract
-      ```
+- **Python Libraries**: `Streamlit`, `LangChain`, `FAISS`, `HuggingFace Embeddings`, `ReportLab`, `pdf2image`, `pytesseract`
+- **OCR**: `pdf2image` and `pytesseract` for PDF-to-text conversion
+- **Vector Store**: `FAISS` for document embedding and retrieval
+- **NLP Model**: `ChatGroq` with `HuggingFace embeddings`
+- **PDF Generation**: `ReportLab` to create downloadable PDFs with style
 
 ---
 
-## Usage
+## 🚀 Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/Question-Paper-Predictor.git
+cd Question-Paper-Predictor
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Set up environment variables with your credentials by creating a `.env` file:
+
+```plaintext
+GROQ_API_KEY=your_groq_api_key
+HF_TOKEN=your_huggingface_token
+```
+
+Install Tesseract for OCR capabilities:
+
+- **Ubuntu**:
+  ```bash
+  sudo apt-get install tesseract-ocr
+  ```
+- **macOS**:
+  ```bash
+  brew install tesseract
+  ```
+
+---
+
+## ⚙️ Usage
 
 1. **Run the App**:
-    ```bash
-    streamlit run app.py
-    ```
+   ```bash
+   streamlit run app.py
+   ```
 
-2. **Upload PDFs**: Drag and drop multiple PDFs to extract content.
+2. **Upload PDFs**: Drag and drop PDFs to extract the content for analysis.
 
-3. **Generate Vector Embeddings**: Click "Document Embedding" after uploading files to initialize the vector database.
+3. **Generate Vector Embeddings**: Initialize the vector database by selecting "Document Embedding" after uploading.
 
-4. **Enter Query**: Input a prompt related to the question pattern you want to analyze.
+4. **Enter Query**: Input a question pattern prompt to analyze past questions and predict future trends.
 
-5. **Download PDF**: After the app generates the response, download the question paper as a PDF.
-
----
-
-## Code Structure
-
-- **app.py**: Main application file with Streamlit components, PDF processing, embedding creation, retrieval chain setup, and PDF export.
-- **requirements.txt**: List of dependencies for the project.
-- **.env**: Contains API keys and tokens for secure access.
+5. **Download PDF**: Get a downloadable PDF with the generated question paper, ready to share or study from!
 
 ---
 
-## Dependencies
+## 📁 Code Structure
+
+- **`app.py`**: Main application file. It handles Streamlit components, PDF processing, embedding creation, retrieval chain setup, and PDF export.
+- **`requirements.txt`**: Contains the list of dependencies.
+- **`.env`**: Stores API keys and tokens securely.
+
+---
+
+## 🧰 Dependencies
 
 ```plaintext
 streamlit
@@ -100,3 +97,8 @@ dotenv
 pdf2image
 pytesseract
 reportlab
+```
+
+--- 
+
+Uncover patterns, anticipate questions, and empower the education process with **Question Paper Predictor**! This project fits perfectly into the hackathon's **AI Innovation** theme, pushing boundaries in NLP and real-time analytics for smarter study resources. 📚✨
