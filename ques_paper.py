@@ -21,16 +21,18 @@ import time
 
 load_dotenv()
 
-# Load environment variables for API keys
+st.set_page_config(page_title="QuestifyAI - Predict Next Question Paper", page_icon="🎓", layout="centered")
+
+# Load environment variables
 os.environ['GROQ_API_KEY'] = os.getenv("GROQ_API_KEY")
 os.environ['HF_TOKEN'] = os.getenv("HF_TOKEN")
 
-# Initialize embeddings and language model
+# Initialize embeddings and model
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 llm = ChatGroq(groq_api_key=os.getenv("GROQ_API_KEY"), model_name="llama-3.2-90b-text-preview")
 llm.temperature = 0.2
 
-# Prompt setup for generating question papers
+# Prompt setup
 prompt = ChatPromptTemplate.from_template(
     """
     Context: {context}
@@ -48,81 +50,49 @@ prompt = ChatPromptTemplate.from_template(
     """
 )
 
-def convert_pdf_to_text(pdf_bytes):
-    """Converts each page of a PDF to text using OCR on images."""
-    text = ""
-    images = convert_from_bytes(pdf_bytes, dpi=300)
-    for page_num, image in enumerate(images):
-        page_text = pytesseract.image_to_string(image)
-        text += f"\n\nPage {page_num + 1}:\n" + page_text
-    return text
+# Function definitions remain the same
 
-def create_vector_embedding(uploaded_files):
-    """Process uploaded PDFs and create vector embeddings."""
-    if "vectors" not in st.session_state:
-        st.session_state.embeddings = HuggingFaceEmbeddings(model_name="all-mpnet-base-v2")
-        docs = []
-        for uploaded_file in uploaded_files:
-            pdf_text = convert_pdf_to_text(uploaded_file.read())
-            doc = Document(page_content=pdf_text, metadata={"source": uploaded_file.name})
-            docs.append(doc)
-        st.session_state.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=500)
-        st.session_state.final_documents = st.session_state.text_splitter.split_documents(docs)
-        st.session_state.vectors = FAISS.from_documents(st.session_state.final_documents, st.session_state.embeddings)
+st.title("🎓 QuestifyAI - Question Paper Predictor")
+st.write("Upload past question papers and enter a query to predict probable questions for upcoming exams!")
 
-def create_pdf(answer_content, question_text):
-    """Generate a styled PDF document using reportlab."""
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('TitleStyle', parent=styles['Title'], fontSize=22, spaceAfter=12, textColor=colors.HexColor("#003366"), alignment=1)
-    question_style = ParagraphStyle('QuestionStyle', parent=styles['Heading2'], fontSize=16, spaceAfter=10, textColor=colors.green)
-    answer_style = ParagraphStyle('AnswerStyle', parent=styles['BodyText'], fontSize=14, spaceAfter=8, leftIndent=10, rightIndent=10)
-    
-    elements = [
-        Paragraph("📄 Generated Answer", title_style),
-        Spacer(1, 0.2 * inch),
-        Paragraph(f"<b>Question:</b> {question_text}", question_style),
-        Spacer(1, 0.1 * inch)
-    ]
+# Upload section with instructions
+uploaded_files = st.file_uploader("📂 Upload past question papers (PDF format)", type="pdf", accept_multiple_files=True)
+st.info("Tip: You can upload multiple files to improve the prediction accuracy based on a larger context.")
 
-    answer_lines = answer_content.split("\n\n")
-    for line in answer_lines:
-        elements.append(Paragraph(line, answer_style))
-        elements.append(Spacer(1, 0.1 * inch))
-    
-    doc.build(elements)
-    buffer.seek(0)
-    return buffer
+# Text input for user's query
+user_prompt = st.text_input("🔍 Enter your question or topic")
 
-st.title("Question Paper Predictor")
+# Embed documents button with progress indicator
+if st.button("Generate Document Embedding") and uploaded_files:
+    with st.spinner("Processing documents... Please wait"):
+        create_vector_embedding(uploaded_files)
+    st.success("Vector Database created successfully! Ready for question generation.")
 
-# Upload multiple PDF files
-uploaded_files = st.file_uploader("Upload multiple PDFs", type="pdf", accept_multiple_files=True)
-
-user_prompt = st.text_input("Enter your query from the research paper")
-
-if st.button("Document Embedding") and uploaded_files:
-    create_vector_embedding(uploaded_files)
-    st.write("Vector Database is ready")
-
+# If embeddings are created and user enters a query
 if user_prompt and "vectors" in st.session_state:
-    # Chain setup for question-answering with retrieved context
     document_chain = create_stuff_documents_chain(llm, prompt)
     retriever = st.session_state.vectors.as_retriever()
     retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
     start = time.process_time()
     response = retrieval_chain.invoke({'input': user_prompt})
-    print(f"Response time: {time.process_time() - start}")
-
+    response_time = time.process_time() - start
     st.write(response['answer'])
+    st.write(f"⏱️ Response generated in {response_time:.2f} seconds")
 
     # PDF generation and download button
     pdf_buffer = create_pdf(response['answer'], user_prompt)
     st.download_button(
-        label="Download Question Paper as PDF",
+        label="📥 Download Predicted Question Paper as PDF",
         data=pdf_buffer,
         file_name="Predicted_Question_Paper.pdf",
         mime="application/pdf"
     )
+
+# Footer with branding
+st.markdown("---")
+st.markdown("### 🔖 Powered by QuestifyAI")
+st.markdown(
+    "QuestifyAI uses advanced NLP techniques to analyze previous papers and predict future questions. "
+    "Good luck with your studies!"
+)
