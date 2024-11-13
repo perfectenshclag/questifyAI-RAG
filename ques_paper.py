@@ -61,7 +61,24 @@ st.info("Tip: You can upload multiple files to improve the prediction accuracy b
 
 # Text input for user's query
 user_prompt = st.text_input("🔍 Enter your question or topic")
-
+def create_vector_embedding(uploaded_files):
+    """Process uploaded PDFs and create vector embeddings."""
+    if "vectors" not in st.session_state:
+        st.session_state.embeddings = HuggingFaceEmbeddings(model_name="all-mpnet-base-v2")
+        
+        # Process each uploaded file
+        docs = []
+        for uploaded_file in uploaded_files:
+            pdf_text = convert_pdf_to_text(uploaded_file.read())
+            doc = Document(page_content=pdf_text, metadata={"source": uploaded_file.name})
+            docs.append(doc)
+        
+        # Split and embed documents
+        st.session_state.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=500)
+        st.session_state.final_documents = st.session_state.text_splitter.split_documents(docs)
+        
+        # Create vector store
+        st.session_state.vectors = FAISS.from_documents(st.session_state.final_documents, st.session_state.embeddings)
 # Embed documents button with progress indicator
 if st.button("Generate Document Embedding") and uploaded_files:
     with st.spinner("Processing documents... Please wait"):
