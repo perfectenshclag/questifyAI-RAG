@@ -36,9 +36,7 @@ llm = ChatGroq(groq_api_key=os.getenv("GROQ_API_KEY"), model_name="llama-3.2-90b
 llm.temperature = 0.2
 
 # Debug environment variables
-st.write("Environment Variable Check:")
-st.write("GROQ_API_KEY:", os.getenv("GROQ_API_KEY"))
-st.write("HF_TOKEN:", os.getenv("HF_TOKEN"))
+
 
 # Prompt setup
 prompt = ChatPromptTemplate.from_template(
