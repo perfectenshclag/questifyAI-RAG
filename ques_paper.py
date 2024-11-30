@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import numpy as np
 from langchain_groq import ChatGroq
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -11,7 +12,7 @@ from langchain.schema.document import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 from pdf2image import convert_from_bytes
-import pytesseract
+import easyocr
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.pagesizes import A4
@@ -32,11 +33,8 @@ st.write("Upload past question papers and enter a query to predict probable ques
 
 # Initialize embeddings and LLM
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-llm = ChatGroq(groq_api_key=os.getenv("GROQ_API_KEY"), model_name="llama-3.2-90b-text-preview")
-llm.temperature = 0.2
-
-# Debug environment variables
-
+llm = ChatGroq(groq_api_key=os.getenv("GROQ_API_KEY"), model_name="llama3-70b-8192")
+llm.temperature = 0.0000000001
 
 # Prompt setup
 prompt = ChatPromptTemplate.from_template(
@@ -48,7 +46,8 @@ prompt = ChatPromptTemplate.from_template(
     - Analyze each section independently and maintain unique trends for each section.
     - Only produce a structured question paper.
     - Section A will have 10 small questions worth two marks each. Section B will have 5 questions with no subsections.
-    - Section C will have 10 questions divided into 5 parts; question 1 will have two options (A and B) where one is to be attempted.
+    - Section C will have 5 questions divided into 2 subparts a and b.Keep in mind that section C is of 10 marks so it would be bigger.
+    - The pattern would be same as the papers in the context 
     - Keep all questions within A4 size. Extend to the next line if needed.
     - Only include in-context questions.
     
@@ -61,18 +60,26 @@ uploaded_files = st.file_uploader("📂 Upload past question papers (PDF format)
 st.info("Tip: You can upload multiple files to improve the prediction accuracy based on a larger context.")
 
 def convert_pdf_to_text(pdf_bytes):
-    """Converts each page of a PDF to text using OCR on images."""
-    text = ""
+    """Converts PDF pages to text using EasyOCR."""
+    # Initialize the EasyOCR reader (specify language(s) if needed, e.g., ["en"])
+    reader = easyocr.Reader(["en"], gpu=False)  # Set `gpu=True` if you want GPU acceleration
+
+    # Convert PDF to images
     images = convert_from_bytes(pdf_bytes, dpi=300)
+
+    # Perform OCR on each page and collect the text
+    text = ""
     for page_num, image in enumerate(images):
-        page_text = pytesseract.image_to_string(image)
+        result = reader.readtext(np.array(image), detail=0)  # Set `detail=0` for plain text
+        page_text = "\n".join(result)
         text += f"\n\nPage {page_num + 1}:\n" + page_text
+    
     return text
 
 def create_vector_embedding(uploaded_files):
     """Process uploaded PDFs and create vector embeddings."""
     if "vectors" not in st.session_state:
-        st.session_state.embeddings = HuggingFaceEmbeddings(model_name="all-mpnet-base-v2")
+        st.session_state.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         
         # Process each uploaded file
         docs = []
@@ -85,10 +92,10 @@ def create_vector_embedding(uploaded_files):
         st.session_state.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=500)
         st.session_state.final_documents = st.session_state.text_splitter.split_documents(docs)
         
-        # Debug: Check processed documents
-        st.write("Processed Documents:")
-        for doc in st.session_state.final_documents[:2]:  # Show first 2 documents
-            st.write(doc.page_content[:500])  # Show first 500 characters of content
+        # # Debug: Check processed documents
+        # st.write("Processed Documents:")
+        # for doc in st.session_state.final_documents[:4]:  # Show first 4 documents
+        #     st.write(doc.page_content[:500])  # Show first 500 characters of content
 
         # Create vector store
         st.session_state.vectors = FAISS.from_documents(st.session_state.final_documents, st.session_state.embeddings)
@@ -106,8 +113,8 @@ if user_prompt and "vectors" in st.session_state:
     retriever = st.session_state.vectors.as_retriever()
     retrieved_docs = retriever.get_relevant_documents(user_prompt)
     st.write(f"Retrieved {len(retrieved_docs)} documents.")
-    for doc in retrieved_docs[:2]:  # Display first 2 retrieved documents
-        st.write(doc.page_content[:500])  # Show first 500 characters
+    # for doc in retrieved_docs[:2]:  # Display first 2 retrieved documents
+    #     st.write(doc.page_content[:500])  # Show first 500 characters
 
     # Debug: Test LLM response
     try:
