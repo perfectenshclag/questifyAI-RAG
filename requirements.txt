@@ -10,4 +10,4 @@ python-dotenv
 reportlab
 pymupdf
 pdf2image
-pytesseract
+easyocr
